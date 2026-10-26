@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><link rel="stylesheet" href="popup.css"></head>
+<body>
+  <h1>Детектор ИИ-текста</h1>
+  <p class="hint">Анализ выполняется на вашем устройстве, текст никуда не отправляется.</p>
+  <button id="run">Проанализировать страницу</button>
+  <button id="clear" class="secondary">Убрать подсветку</button>
+  <details>
+    <summary>Настройки</summary>
+    <label>Пороги модели (рекомендуется)<input id="modelThresholds" type="checkbox"></label>
+    <label>Жёлтая подсветка от, %<input id="low" type="number" min="0" max="100"></label>
+    <label>Красная подсветка от, %<input id="high" type="number" min="0" max="100"></label>
+    <label>Минимум слов в абзаце<input id="minWords" type="number" min="5" max="500"></label>
+  </details>
+  <p class="legend"><span class="y"></span> возможно ИИ <span class="r"></span> вероятно ИИ</p>
+  <p id="msg" class="hint"></p>
+  <script src="popup.js"></script>
+</body></html>

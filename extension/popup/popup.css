@@ -1,0 +1,10 @@
+body { font: 14px system-ui, sans-serif; width: 270px; margin: 12px; color: #1f2937; }
+h1 { font-size: 16px; margin: 0 0 6px; }
+.hint { color: #6b7280; font-size: 12px; margin: 4px 0 10px; }
+button { width: 100%; padding: 8px; margin: 4px 0; border: 0; border-radius: 6px; background: #2563eb; color: #fff; cursor: pointer; font-size: 14px; }
+button.secondary { background: #e5e7eb; color: #111827; }
+label { display: flex; justify-content: space-between; align-items: center; margin: 6px 0; font-size: 12px; }
+input { width: 60px; }
+details { margin: 8px 0; }
+.legend span { display: inline-block; width: 12px; height: 12px; border-radius: 2px; vertical-align: -2px; margin: 0 2px 0 6px; }
+.legend .y { background: rgba(250, 204, 21, 0.6); } .legend .r { background: rgba(239, 68, 68, 0.5); }

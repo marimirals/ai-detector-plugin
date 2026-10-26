@@ -1,0 +1,100 @@
+{
+ "version": "demo",
+ "demo": true,
+ "langs": {
+  "ru": {
+   "features": [
+    "mean_sent_len",
+    "cv_sent_len",
+    "mean_word_len",
+    "ttr",
+    "punct_ratio",
+    "func_ratio",
+    "rep_bigram_ratio",
+    "rep_trigram_ratio",
+    "comma_per_sent"
+   ],
+   "mean": [
+    18,
+    0.5,
+    5.5,
+    0.65,
+    0.04,
+    0.35,
+    0.05,
+    0.01,
+    1.0
+   ],
+   "scale": [
+    8,
+    0.25,
+    0.8,
+    0.12,
+    0.015,
+    0.08,
+    0.05,
+    0.02,
+    0.7
+   ],
+   "coef": [
+    0.2,
+    -0.8,
+    0.6,
+    -0.3,
+    -0.2,
+    0.0,
+    0.4,
+    0.4,
+    0.0
+   ],
+   "intercept": 0.0
+  },
+  "en": {
+   "features": [
+    "mean_sent_len",
+    "cv_sent_len",
+    "mean_word_len",
+    "ttr",
+    "punct_ratio",
+    "func_ratio",
+    "rep_bigram_ratio",
+    "rep_trigram_ratio",
+    "comma_per_sent"
+   ],
+   "mean": [
+    18,
+    0.5,
+    5.5,
+    0.65,
+    0.04,
+    0.35,
+    0.05,
+    0.01,
+    1.0
+   ],
+   "scale": [
+    8,
+    0.25,
+    0.8,
+    0.12,
+    0.015,
+    0.08,
+    0.05,
+    0.02,
+    0.7
+   ],
+   "coef": [
+    0.2,
+    -0.8,
+    0.6,
+    -0.3,
+    -0.2,
+    0.0,
+    0.4,
+    0.4,
+    0.0
+   ],
+   "intercept": 0.0
+  }
+ }
+}
