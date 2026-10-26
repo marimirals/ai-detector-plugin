@@ -50,14 +50,15 @@ export function aggregate(s) {
 }
 
 // Загрузка токенизатора и модели. tokenizerLib — модуль Transformers.js, ort — модуль ONNX Runtime Web.
-export async function loadLM({ tokenizerLib, ort, modelsUrl, name, file = 'model_quantized.onnx', modelBytes = null }) {
+export async function loadLM({ tokenizerLib, ort, modelsUrl, name, file = 'model_quantized.onnx', modelBytes = null,
+                             providers = ['wasm'] }) {
   const t0 = performance.now();
   tokenizerLib.env.allowRemoteModels = false;
   tokenizerLib.env.allowLocalModels = true;
   tokenizerLib.env.localModelPath = modelsUrl;
   const tokenizer = await tokenizerLib.AutoTokenizer.from_pretrained(name);
   const source = modelBytes ?? `${modelsUrl}${name}/onnx/${file}`;   // в Node.js (тесты) модель передаётся байтами
-  const session = await ort.InferenceSession.create(source, { executionProviders: ['wasm'] });
+  const session = await ort.InferenceSession.create(source, { executionProviders: providers });
   return { tokenizer, session, ort, loadMs: performance.now() - t0 };
 }
 

@@ -26,10 +26,27 @@ def export_onnx(model, tok, out_dir, opset=17):
     tok.save_pretrained(out_dir)          # быстрый токенизатор сохраняет tokenizer.json
     return path
 
-def quantize(path_fp32):
+def last_matmul_name(path):
+    """Имя последнего умножения матриц — выходной слой модели (проекция на словарь)."""
+    import onnx
+    m = onnx.load(path, load_external_data=False)
+    return [n.name for n in m.graph.node if n.op_type in ('MatMul', 'Gemm')][-1]
+
+QUANT_VARIANTS = {
+    'q8': {},                                         # по умолчанию: один масштаб на всю матрицу весов
+    'q8_per_channel': {'per_channel': True},          # свой масштаб для каждого столбца
+    'q8_keep_head': {'keep_head': True},              # выходной слой остаётся в fp32
+    'q8_pc_keep_head': {'per_channel': True, 'keep_head': True},
+}
+
+def quantize(path_fp32, variant='q8'):
     from onnxruntime.quantization import quantize_dynamic, QuantType
-    out = path_fp32.replace('model.onnx', 'model_quantized.onnx')
-    quantize_dynamic(path_fp32, out, weight_type=QuantType.QInt8)
+    opts = QUANT_VARIANTS[variant]
+    out = path_fp32.replace('model.onnx', f'model_{variant}.onnx')
+    kw = {'per_channel': opts.get('per_channel', False)}
+    if opts.get('keep_head'):
+        kw['nodes_to_exclude'] = [last_matmul_name(path_fp32)]
+    quantize_dynamic(path_fp32, out, weight_type=QuantType.QInt8, **kw)
     return out
 
 def size_mb(path):
