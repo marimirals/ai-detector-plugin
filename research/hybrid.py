@@ -21,9 +21,11 @@ def feature_table(texts, langs, stats, k=None, decode=None):
         rows.append(f)
     return pd.DataFrame(rows)
 
-def fit(X, y):
+def fit(X, y, sample_weight=None):
     m = make_pipeline(StandardScaler(), LogisticRegression(max_iter=3000, class_weight='balanced'))
-    return m.fit(X, y)
+    if sample_weight is None:
+        return m.fit(X, y)
+    return m.fit(X, y, logisticregression__sample_weight=sample_weight)
 
 def threshold_at_fpr(model, X_val, y_val, fpr):
     """Порог, при котором на валидационной выборке доля ложных срабатываний равна fpr."""
