@@ -51,3 +51,23 @@ def aggregate(s, k=None):
         'rank_101_1000': float(((rank >= 101) & (rank <= 1000)).mean()), 'rank_gt_1000': float((rank > 1000).mean()),
         'curvature': float(curv),
     }
+
+
+# Дополнительные признаки (шаг 6): вычисляются из тех же величин по токенам, без новых проходов модели.
+LM_EXTRA_NAMES = ['lp_q10', 'lp_q50', 'lp_q90', 'std_entropy', 'mean_lp_plus_h',
+                  'xent_ratio', 'frac_above_expected', 'mean_var']
+
+def aggregate_ext(s, k=None):
+    """lp_q10/50/90 — квантили логарифма вероятности; std_entropy — разброс энтропии;
+    mean_lp_plus_h — среднее (log p + H), то есть превышение правдоподобия над ожидаемым в каждой позиции;
+    xent_ratio — отношение среднего «удивления» −log p к средней энтропии (одномодельный аналог Binoculars);
+    frac_above_expected — доля токенов, для которых log p > −H; mean_var — средняя дисперсия log p."""
+    lp, ent, var = (np.asarray(s[x][:k] if k else s[x], dtype=np.float64) for x in ('lp', 'ent', 'var'))
+    if len(lp) == 0:
+        return {f: 0.0 for f in LM_EXTRA_NAMES}
+    return {
+        'lp_q10': float(np.quantile(lp, 0.1)), 'lp_q50': float(np.quantile(lp, 0.5)), 'lp_q90': float(np.quantile(lp, 0.9)),
+        'std_entropy': float(ent.std()), 'mean_lp_plus_h': float((lp + ent).mean()),
+        'xent_ratio': float((-lp).mean() / max(ent.mean(), 1e-6)),
+        'frac_above_expected': float((lp > -ent).mean()), 'mean_var': float(var.mean()),
+    }
