@@ -13,6 +13,6 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   if (msg?.target !== 'offscreen' || msg.type !== 'analyze') return false;
   const requestId = nextId++;
   pending.set(requestId, sendResponse);
-  worker.postMessage({ requestId, items: msg.items, minWords: msg.minWords });
+  worker.postMessage({ requestId, items: msg.items, minWords: msg.minWords, mode: msg.mode, config: msg.config });
   return true; // ответ придёт асинхронно
 });

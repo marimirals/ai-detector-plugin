@@ -4,6 +4,7 @@
   <h1>Детектор ИИ-текста</h1>
   <p class="hint">Анализ выполняется на вашем устройстве, текст никуда не отправляется.</p>
   <button id="run">Проанализировать страницу</button>
+  <button id="article" class="secondary">Оценить статью целиком</button>
   <button id="clear" class="secondary">Убрать подсветку</button>
   <details>
     <summary>Настройки</summary>
@@ -11,6 +12,15 @@
     <label>Жёлтая подсветка от, %<input id="low" type="number" min="0" max="100"></label>
     <label>Красная подсветка от, %<input id="high" type="number" min="0" max="100"></label>
     <label>Минимум слов в абзаце<input id="minWords" type="number" min="5" max="500"></label>
+    <label>Быстрая предварительная подсветка<input id="twoStage" type="checkbox"></label>
+    <label>Вычисления
+      <select id="backend">
+        <option value="wasm">Процессор (WebAssembly)</option>
+        <option value="webgpu">Видеокарта (WebGPU)</option>
+      </select>
+    </label>
+    <label>Потоков процессора (0 — авто)<input id="threads" type="number" min="0" max="16"></label>
+    <a href="#" id="bench">Замер скорости…</a>
   </details>
   <p class="legend"><span class="y"></span> возможно ИИ <span class="r"></span> вероятно ИИ</p>
   <p id="msg" class="hint"></p>

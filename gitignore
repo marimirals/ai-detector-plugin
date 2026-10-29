@@ -1,0 +1,25 @@
+# статьи и книги из списка литературы (авторское право, в репозиторий не кладём)
+sources/
+
+# датасеты и модели (большие файлы, скачиваются отдельно)
+data/
+models/
+extension/vendor/
+*.onnx
+*.bin
+*.safetensors
+
+# Python
+__pycache__/
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# Node / расширение
+node_modules/
+dist/
+
+# временные файлы Word и системы
+~$*
+.DS_Store
+Thumbs.db

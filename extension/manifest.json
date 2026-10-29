@@ -1,13 +1,37 @@
 {
   "manifest_version": 3,
   "name": "Детектор ИИ-текста (дипломный проект)",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "description": "Подсвечивает на странице фрагменты, вероятно сгенерированные ИИ. Анализ выполняется локально.",
-  "permissions": ["storage", "offscreen"],
-  "background": { "service_worker": "background/service-worker.js" },
-  "content_scripts": [
-    { "matches": ["<all_urls>"], "js": ["content/content.js"], "run_at": "document_idle" }
+  "permissions": [
+    "storage",
+    "offscreen"
   ],
-  "action": { "default_popup": "popup/popup.html", "default_title": "Детектор ИИ-текста" },
-  "content_security_policy": { "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';" }
+  "background": {
+    "service_worker": "background/service-worker.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "content/content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "Детектор ИИ-текста"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';"
+  },
+  "cross_origin_embedder_policy": {
+    "value": "require-corp"
+  },
+  "cross_origin_opener_policy": {
+    "value": "same-origin"
+  }
 }

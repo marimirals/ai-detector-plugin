@@ -97,12 +97,19 @@ export function tokenize(lm, text, maxTokens = 256) {
 
 export async function lmFeatures(lm, text, maxTokens = 256) {
   const ids = tokenize(lm, text, maxTokens);
-  if (ids.length < 2) return aggregate({ lp: [], ent: [], var: [], rank: [] });
+  if (ids.length < 2) return { ...aggregate({ lp: [], ent: [], var: [], rank: [] }), _tokens: ids.length };
   const T = ids.length;
   const toTensor = (arr) => new lm.ort.Tensor('int64', BigInt64Array.from(arr.map(BigInt)), [1, T]);
   const feeds = { input_ids: toTensor(ids), attention_mask: toTensor(new Array(T).fill(1)) };
   const out = await lm.session.run(feeds);
-  if (lm.graphStats) return aggregate(statsFromGraph(out.stats.data, T - 1));
-  const logits = out.logits;
-  return aggregate(tokenStats(ids, logits.data, logits.dims[2]));
+  const f = lm.graphStats ? aggregate(statsFromGraph(out.stats.data, T - 1))
+    : aggregate(tokenStats(ids, out.logits.data, out.logits.dims[2]));
+  f._tokens = T;                // число токенов фрагмента — по нему выбирается классификатор под длину
+  return f;
+}
+
+// Текст, восстановленный из первых maxTokens токенов (для стилометрии в режиме «вся статья»)
+export function truncateText(lm, text, maxTokens) {
+  const ids = tokenize(lm, text, maxTokens);
+  return lm.tokenizer.decode(ids, { skip_special_tokens: true, clean_up_tokenization_spaces: false });
 }
