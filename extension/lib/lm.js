@@ -83,6 +83,8 @@ export async function loadLM({ tokenizerLib, ort, modelsUrl, name, file = 'model
   tokenizerLib.env.allowRemoteModels = false;
   tokenizerLib.env.allowLocalModels = true;
   tokenizerLib.env.localModelPath = modelsUrl;
+  // Cache API не принимает адреса chrome-extension://, а файлы и так лежат локально
+  tokenizerLib.env.useBrowserCache = false;
   const tokenizer = await tokenizerLib.AutoTokenizer.from_pretrained(name);
   const source = modelBytes ?? `${modelsUrl}${name}/onnx/${file}`;   // в Node.js (тесты) модель передаётся байтами
   const session = await ort.InferenceSession.create(source, { executionProviders: providers });
