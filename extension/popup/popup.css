@@ -17,10 +17,12 @@
 
 * { box-sizing: border-box; }
 html, body { margin: 0; }
+/* Окно постоянного размера: браузер не перестраивает его и не показывает полосу прокрутки */
+html { width: 540px; height: 588px; overflow: hidden; }
 body {
-  position: relative; width: 540px; min-height: 500px; padding: 18px 28px 10px;
+  position: relative; width: 540px; height: 588px; padding: 18px 28px 4px; display: flex; flex-direction: column;
   font: 14px/1.45 'Inter', system-ui, sans-serif; color: var(--ink); background: var(--bg);
-  border-top: 4px solid var(--brand); overflow-x: hidden;
+  border-top: 4px solid var(--brand); overflow: hidden;   /* высота окна постоянная: настройки раскрываются внутри, окно не прыгает */
 }
 
 /* мягкое голубое свечение за заголовком */
@@ -47,11 +49,19 @@ h1 {
   transition: transform .16s ease, box-shadow .16s ease, background-color .16s ease, border-color .16s ease;
 }
 .btn svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; opacity: .85; }
-.btn:hover { transform: translateY(-1px); border-color: var(--brand); background: var(--brand-soft); box-shadow: 0 6px 18px -10px rgba(61, 155, 233, 0.55); }
-.btn:active { transform: translateY(0); box-shadow: none; }
+.btn:hover { border-color: var(--brand); background: var(--brand-soft); box-shadow: 0 6px 18px -10px rgba(61, 155, 233, 0.55); }
+.btn:active { box-shadow: none; }
 .btn:focus-visible, .settings-head:focus-visible { outline: 2px solid var(--brand-strong); outline-offset: 2px; }
-.btn.primary { background: var(--brand); border-color: var(--brand); font-weight: 600; }
-.btn.primary:hover { background: #6ab9fb; border-color: #6ab9fb; }
+.btn.primary {   /* главная кнопка: белая, с градиентной рамкой в цветах иконки */
+  font-weight: 600; border: 1.5px solid transparent;
+  background: linear-gradient(#fff, #fff) padding-box, linear-gradient(135deg, #9fd6ff, #4b9fe8) border-box;
+  box-shadow: 0 4px 14px -8px rgba(61, 155, 233, 0.6);
+}
+.btn.primary svg { color: var(--brand-strong); opacity: 1; stroke-width: 1.8; }
+.btn.primary:hover {
+  background: linear-gradient(var(--brand-soft), var(--brand-soft)) padding-box, linear-gradient(135deg, #9fd6ff, #4b9fe8) border-box;
+  box-shadow: 0 8px 20px -10px rgba(61, 155, 233, 0.7);
+}
 .btn:disabled { opacity: .45; cursor: default; transform: none; box-shadow: none; background: #fff; border-color: var(--line); }
 #toggle.restore .slash { display: none; }   /* «Вернуть» — глаз без черты */
 
@@ -62,10 +72,11 @@ h1 {
 .sw.y { background: var(--yellow); } .sw.r { background: var(--red); }
 
 .msg:empty { display: none; }
-.msg { margin: 10px 0 0; text-align: center; font-size: 12.5px; color: var(--muted); }
+.msg { margin: 18px 0 0; min-height: 18px; text-align: center; font-size: 12.5px; color: var(--muted); }
 
 /* настройки */
-.settings { margin-top: 18px; border-top: 1px solid var(--line); padding-top: 8px; }
+.settings { margin-top: 18px; border-top: 1px solid var(--line); padding-top: 8px; flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+header, .actions, .legend, .msg, .settings-head { flex: none; }
 .settings-head {
   width: 100%; display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px;
   border: 0; background: transparent; cursor: pointer; font: 500 14px 'Inter', system-ui, sans-serif; color: var(--ink);
@@ -76,10 +87,17 @@ h1 {
 .settings-head .chev { margin-left: auto; transition: transform .2s ease; opacity: .7; }
 .settings-head[aria-expanded="true"] .chev { transform: rotate(180deg); }
 
-.settings-panel { padding: 6px 4px 2px; }
+.settings-panel {
+  display: grid; grid-template-rows: 0fr; opacity: 0; min-height: 0; flex: 0 1 auto;
+  transition: grid-template-rows .26s ease, opacity .2s ease;
+}
+.settings-panel > .inner { overflow: hidden; min-height: 0; padding: 0 4px; }
+.settings-panel.open { grid-template-rows: 1fr; opacity: 1; }
+.settings-panel.open > .inner { padding-top: 4px; }
+.inner { scrollbar-width: none; } .inner::-webkit-scrollbar { display: none; }
 .row {
   display: flex; align-items: center; justify-content: space-between; gap: 16px;
-  padding: 8px 8px; border-bottom: 1px solid #eef3f9; cursor: pointer;
+  padding: 7px 8px; border-bottom: 1px solid #eef3f9; cursor: pointer;
 }
 .row:last-of-type { border-bottom: 0; }
 .label { display: flex; align-items: center; gap: 8px; font-size: 13.5px; }
@@ -106,3 +124,12 @@ h1 {
 
 .bench { display: inline-block; margin: 6px 8px 0; font-size: 12px; color: var(--muted); text-decoration: none; }
 .bench:hover { color: var(--brand-strong); text-decoration: underline; }
+.legend[hidden] { display: none; }
+/* без стрелочек у числовых полей: число вводится с клавиатуры (стрелки ↑/↓ на клавиатуре по-прежнему работают) */
+.num::-webkit-outer-spin-button, .num::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.num { -moz-appearance: textfield; appearance: textfield; }
+
+/* неактивные ручные пороги (включены автоматические) */
+.row.off { cursor: default; }
+.row.off .label { opacity: .45; }
+.num:disabled { opacity: .45; background: #f6f9fc; cursor: not-allowed; }

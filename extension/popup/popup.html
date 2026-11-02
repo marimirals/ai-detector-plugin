@@ -8,11 +8,7 @@
   <div class="glow" aria-hidden="true"></div>
 
   <header>
-    <svg class="mark" viewBox="0 0 40 40" aria-hidden="true">
-      <rect x="1" y="1" width="38" height="38" rx="11" fill="var(--brand-soft)" stroke="var(--brand)" stroke-width="1.5"/>
-      <path d="M11 14h18M11 20h12M11 26h15" stroke="var(--ink)" stroke-width="2.2" stroke-linecap="round" opacity=".8"/>
-      <path d="M29 22.5l1.1 2.4 2.4 1.1-2.4 1.1-1.1 2.4-1.1-2.4-2.4-1.1 2.4-1.1z" fill="var(--brand-strong)"/>
-    </svg>
+    <img class="mark" src="../icons/icon128.png" alt="">
     <h1>Детектор ИИ-текста</h1>
     <p class="sub">Анализ выполняется на вашем устройстве,<br>текст никуда не отправляется.</p>
   </header>
@@ -32,7 +28,7 @@
     </button>
   </section>
 
-  <section class="legend" aria-label="Обозначения">
+  <section id="legend" class="legend" aria-label="Обозначения">
     <span class="chip"><i class="sw y"></i>Средняя вероятность ИИ</span>
     <span class="chip"><i class="sw r"></i>Высокая вероятность ИИ</span>
   </section>
@@ -45,9 +41,9 @@
       <span>Настройки</span>
       <svg class="chev" viewBox="0 0 20 20" aria-hidden="true"><path d="M6 8l4 4 4-4"/></svg>
     </button>
-    <div id="settingsPanel" class="settings-panel" hidden>
+    <div id="settingsPanel" class="settings-panel" inert><div class="inner">
       <label class="row">
-        <span class="label">Пороги модели<small>рекомендуется: подобраны на проверочной выборке</small></span>
+        <span class="label">Автоматические пороги<small>подобраны при обучении; выключите, чтобы задать свои</small></span>
         <span class="switch"><input id="modelThresholds" type="checkbox"><i></i></span>
       </label>
       <label class="row">
@@ -63,7 +59,7 @@
         <input id="minWords" class="num" type="number" min="5" max="500">
       </label>
       <a href="#" id="bench" class="bench">Замер скорости…</a>
-    </div>
+    </div></div>
   </section>
 
   <script src="popup.js"></script>

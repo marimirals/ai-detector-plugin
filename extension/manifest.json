@@ -23,7 +23,13 @@
   ],
   "action": {
     "default_popup": "popup/popup.html",
-    "default_title": "Детектор ИИ-текста"
+    "default_title": "Детектор ИИ-текста",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
   },
   "content_security_policy": {
     "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';"
@@ -33,5 +39,11 @@
   },
   "cross_origin_opener_policy": {
     "value": "same-origin"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
   }
 }

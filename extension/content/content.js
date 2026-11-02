@@ -2,7 +2,7 @@
 (() => {
   const BLOCK_SELECTOR = 'p, li, blockquote, td, dd, figcaption, h1, h2, h3';
   const ATTR = 'data-aid-id';
-  const DEFAULTS = { low: 0.4, high: 0.7, minWords: 40, modelThresholds: true, twoStage: false, backend: 'wasm', threads: 0 };
+  const DEFAULTS = { low: 0.4, high: 0.7, minWords: 40, modelThresholds: false, twoStage: false, backend: 'wasm', threads: 0 };
   let settings = { ...DEFAULTS };
   let active = false;
   let hidden = false;   // подсветка спрятана кнопкой «Убрать подсветку», результаты сохранены в cache

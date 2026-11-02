@@ -1,6 +1,6 @@
 // Видимые настройки: пороги и минимальная длина абзаца. Быстрая предварительная оценка отключена,
 // вычисления — всегда на процессоре (WebAssembly) с автоматическим числом потоков.
-const DEFAULTS = { low: 0.4, high: 0.7, minWords: 40, modelThresholds: true, twoStage: false, backend: 'wasm', threads: 0 };
+const DEFAULTS = { low: 0.4, high: 0.7, minWords: 40, modelThresholds: false, twoStage: false, backend: 'wasm', threads: 0 };
 const $ = (id) => document.getElementById(id);
 let saved = { ...DEFAULTS };
 
@@ -8,15 +8,23 @@ async function load() {
   saved = { ...DEFAULTS, ...(await chrome.storage.sync.get(DEFAULTS)) };
   $('low').value = Math.round(saved.low * 100); $('high').value = Math.round(saved.high * 100);
   $('minWords').value = saved.minWords; $('modelThresholds').checked = saved.modelThresholds;
+  syncThresholdInputs();
+}
+// При автоматических порогах ручные не используются — их поля неактивны
+function syncThresholdInputs() {
+  const auto = $('modelThresholds').checked;
+  ['low', 'high'].forEach((id) => { $(id).disabled = auto; $(id).closest('.row').classList.toggle('off', auto); });
 }
 function read() {
   return { low: Number($('low').value) / 100, high: Number($('high').value) / 100, minWords: Number($('minWords').value),
            modelThresholds: $('modelThresholds').checked, twoStage: false, backend: 'wasm', threads: 0 };
 }
+// Сообщение показывается на месте обозначений цветов, чтобы окно не меняло высоту
+function showMsg(t) { $('msg').textContent = t; $('legend').hidden = !!t; }
 async function activeTab() { const [tab] = await chrome.tabs.query({ active: true, currentWindow: true }); return tab; }
 async function send(msg) {
-  try { const r = await chrome.tabs.sendMessage((await activeTab()).id, msg); $('msg').textContent = ''; return r ?? true; }
-  catch { $('msg').textContent = 'На этой странице расширение не работает (служебная страница или страница не перезагружена после установки).'; return null; }
+  try { const r = await chrome.tabs.sendMessage((await activeTab()).id, msg); showMsg(''); return r ?? true; }
+  catch { showMsg('Здесь не работает: служебная страница или её нужно обновить'); return null; }
 }
 async function persist() {
   const s = read();
@@ -43,9 +51,16 @@ $('toggle').onclick = async () => {
 
 $('settingsToggle').onclick = () => {
   const open = $('settingsToggle').getAttribute('aria-expanded') !== 'true';
-  $('settingsToggle').setAttribute('aria-expanded', String(open)); $('settingsPanel').hidden = !open;
+  $('settingsToggle').setAttribute('aria-expanded', String(open)); $('settingsPanel').classList.toggle('open', open); $('settingsPanel').inert = !open;
 };
-['low', 'high', 'minWords', 'modelThresholds'].forEach((id) => $(id).addEventListener('change', persist));
+$('modelThresholds').addEventListener('change', syncThresholdInputs);
+['low', 'high', 'minWords', 'modelThresholds'].forEach((id) => { $(id).addEventListener('change', persist); $(id).addEventListener('input', persist); });
+
+// Курсор ушёл из окна — окно закрывается, чтобы не закрывать страницу и подсказки к абзацам.
+// Анализ при этом продолжается: он идёт в самой странице и в фоновом процессе расширения, а не в этом окне.
+let closeTimer = null;
+document.documentElement.addEventListener('mouseleave', () => { closeTimer = setTimeout(() => window.close(), 120); });
+document.documentElement.addEventListener('mouseenter', () => clearTimeout(closeTimer));
 $('bench').onclick = (e) => { e.preventDefault(); chrome.tabs.create({ url: chrome.runtime.getURL('bench/bench.html') }); };
 
 load().then(refreshState);
