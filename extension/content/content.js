@@ -2,9 +2,10 @@
 (() => {
   const BLOCK_SELECTOR = 'p, li, blockquote, td, dd, figcaption, h1, h2, h3';
   const ATTR = 'data-aid-id';
-  const DEFAULTS = { low: 0.4, high: 0.7, minWords: 40, modelThresholds: true, twoStage: true, backend: 'wasm', threads: 0 };
+  const DEFAULTS = { low: 0.4, high: 0.7, minWords: 40, modelThresholds: true, twoStage: false, backend: 'wasm', threads: 0 };
   let settings = { ...DEFAULTS };
   let active = false;
+  let hidden = false;   // подсветка спрятана кнопкой «Убрать подсветку», результаты сохранены в cache
   let observer = null;
   let queue = new Map();
   let timer = null;
@@ -158,7 +159,7 @@
     const res = await request('article', [{ id: 'article', text }]);
     const r = res?.results?.[0];
     if (!r || r.status !== 'ok') { showBadge(r?.status === 'unsupported_language' ? 'Язык страницы не поддерживается' : 'Не удалось оценить статью'); return; }
-    const level = r.thr ? (r.p >= r.thr.fpr02 ? 'вероятно ИИ' : r.p >= r.thr.fpr10 ? 'возможно ИИ' : 'скорее человек') : '';
+    const level = r.thr ? (r.p >= r.thr.fpr02 ? 'высокая вероятность ИИ' : r.p >= r.thr.fpr10 ? 'средняя вероятность ИИ' : 'низкая вероятность ИИ') : '';
     showBadge(`Статья целиком: ${Math.round(r.p * 100)}% (${level})\nПроанализировано токенов: ${r.tokens}\n` +
       r.top.map((t) => `• ${t.label} — ${t.contribution > 0 ? 'похоже на ИИ' : 'похоже на человека'}`).join('\n') +
       '\nОценка вероятностная и не является доказательством.');
@@ -177,10 +178,20 @@
     b.textContent = text;
   }
 
+  // Вернуть подсветку: уже посчитанные блоки окрашиваются сразу из cache, без повторного анализа
+  function show() {
+    hidden = false; start();
+    document.querySelectorAll(`[${ATTR}]`).forEach((el) => {
+      const c = cache.get(el.getAttribute(ATTR)); if (c) paint(el, c, c.demo);
+    });
+  }
+  const state = () => ({ active, hidden });
+
   chrome.runtime.onMessage.addListener((msg, _s, sendResponse) => {
     if (msg?.type === 'article') analyzeArticle(msg.settings);
-    if (msg?.type === 'run') { settings = { ...DEFAULTS, ...msg.settings }; stop(); cache.clear(); start(); }
-    if (msg?.type === 'clear') { stop(); document.getElementById('aid-badge')?.remove(); }
-    if (msg?.type === 'status') sendResponse({ active });
+    if (msg?.type === 'run') { settings = { ...DEFAULTS, ...msg.settings }; hidden = false; stop(); cache.clear(); start(); }
+    if (msg?.type === 'hide' || msg?.type === 'clear') { stop(); hidden = cache.size > 0; document.getElementById('aid-badge')?.remove(); }
+    if (msg?.type === 'show') show();
+    if (['run', 'hide', 'clear', 'show', 'status'].includes(msg?.type)) sendResponse(state());
   });
 })();
