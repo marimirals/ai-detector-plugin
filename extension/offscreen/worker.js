@@ -26,7 +26,13 @@ function getEngine(config = {}) {
   if (engine) return engine;   // ONNX Runtime инициализируется один раз; смена настроек — перезапуском документа
   const libs = (async () => {
     const t0 = performance.now();
-    const ort = await import(backend === 'webgpu' ? '../vendor/ort/ort.webgpu.min.mjs' : '../vendor/ort/ort.wasm.min.mjs');
+    // Сборки *.bundle.min.mjs самодостаточны; обычные *.min.mjs ссылаются на пакет onnxruntime-common и в браузере не загружаются
+    const files = backend === 'webgpu' ? ['ort.webgpu.bundle.min.mjs', 'ort.webgpu.min.mjs'] : ['ort.wasm.bundle.min.mjs', 'ort.wasm.min.mjs'];
+    let ort = null, lastErr = null;
+    for (const f of files) {
+      try { ort = await import(`../vendor/ort/${f}`); break; } catch (err) { lastErr = err; }
+    }
+    if (!ort) throw lastErr;
     ort.env.wasm.wasmPaths = VENDOR_URL + 'ort/';
     ort.env.wasm.numThreads = self.crossOriginIsolated ? threads : 1;   // потоки требуют cross-origin isolation
     ort.env.wasm.proxy = false;

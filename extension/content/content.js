@@ -37,7 +37,10 @@
   // stage 1 — предварительная оценка по стилометрии (пунктирная рамка), stage 2 — гибридный детектор
   function paint(el, r, demo) {
     if (r.status !== 'ok') {
-      if (r.status === 'error' && el.dataset.aidStage === '1') el.title = el.title.replace('уточняется…', 'уточнить не удалось');
+      if (r.status === 'error' && el.dataset.aidStage === '1') {
+        el.dataset.aidTip = el.dataset.aidTip.replace('уточняется…', 'уточнить не удалось');
+        el.style.removeProperty('outline');
+      }
       else if (r.status !== 'skipped' && !el.dataset.aidStage) clearEl(el);
       return;
     }
@@ -48,13 +51,13 @@
     const pct = Math.round(r.p * 100);
     const reasons = r.top.map((t) => `• ${t.label} — ${t.contribution > 0 ? 'похоже на ИИ' : 'похоже на человека'}`).join('\n');
     const head = r.stage === 1 ? 'Предварительная оценка (только стиль текста), уточняется…' : 'Вероятность генерации ИИ';
-    el.title = `${head}: ${pct}%${demo ? ' (ДЕМО-веса!)' : ''}\n` +
+    el.dataset.aidTip = `${head}: ${pct}%${demo ? ' (ДЕМО-веса!)' : ''}\n` +
       `Основные признаки:\n${reasons}\n\nОценка вероятностная и не является доказательством.`;
     if (color) el.style.setProperty('background-color', color, 'important');
     if (r.stage === 1) el.style.setProperty('outline', '1px dashed rgba(120, 120, 120, 0.8)', 'important');
   }
   function clearEl(el) {
-    el.removeAttribute('title'); delete el.dataset.aidStage;
+    delete el.dataset.aidTip; delete el.dataset.aidStage;
     el.style.removeProperty('background-color'); el.style.removeProperty('outline');
   }
 
@@ -121,9 +124,31 @@
 
   function stop() {
     active = false;
-    observer?.disconnect(); observer = null; queue.clear(); fullQueue = [];
+    observer?.disconnect(); observer = null; queue.clear(); fullQueue = []; if (tip) tip.style.display = 'none';
     document.querySelectorAll(`[${ATTR}]`).forEach(clearEl);
   }
+
+  // Собственная всплывающая подсказка: появляется сразу при наведении (стандартная подсказка браузера — с задержкой)
+  let tip = null;
+  function tipEl() {
+    if (!tip) {
+      tip = document.createElement('div');
+      tip.style.cssText = 'position:fixed;z-index:2147483647;max-width:380px;padding:8px 10px;background:#111827;color:#f9fafb;' +
+        'font:13px/1.4 system-ui,sans-serif;border-radius:6px;white-space:pre-line;pointer-events:none;display:none;' +
+        'box-shadow:0 4px 16px rgba(0,0,0,.3)';
+      document.documentElement.appendChild(tip);
+    }
+    return tip;
+  }
+  document.addEventListener('mousemove', (e) => {
+    const el = e.target instanceof Element ? e.target.closest('[data-aid-tip]') : null;
+    const t = tipEl();
+    if (!el || !active) { t.style.display = 'none'; return; }
+    t.textContent = el.dataset.aidTip; t.style.display = 'block';
+    const x = Math.min(e.clientX + 14, window.innerWidth - t.offsetWidth - 8);
+    const y = e.clientY + 18 + t.offsetHeight > window.innerHeight ? e.clientY - t.offsetHeight - 12 : e.clientY + 18;
+    t.style.left = x + 'px'; t.style.top = y + 'px';
+  }, { passive: true });
 
   // Оценка всей статьи: текст всех найденных блоков страницы объединяется и анализируется как один текст (512 токенов)
   async function analyzeArticle(s) {
