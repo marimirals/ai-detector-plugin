@@ -27,6 +27,7 @@ export const FEATURE_LABELS = {
   xent_ratio: 'отношение «удивления» к неопределённости',
   frac_above_expected: 'доля слов предсказуемее ожидаемого',
   mean_var: 'разброс вероятностей в прогнозе модели',
+  marker_rate: 'типичные для ИИ обороты',
 };
 
 const sigmoid = (z) => 1 / (1 + Math.exp(-z));

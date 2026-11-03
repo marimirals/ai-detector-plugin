@@ -94,3 +94,25 @@ export function stylometricFeatures(text, lang) {
 }
 
 export function wordCount(text) { return (text.match(WORD) || []).length; }
+
+// Частота типичных для ИИ оборотов (шаги 12–13): вхождения n-грамм (1–3 слова) из списка на 100 слов.
+// Разбиение на слова и n-граммы — как в Python (research/13_markers_weights_v6.ipynb): строчные буквы, «ё» → «е».
+const RU_WORD = /[а-яё]+(?:-[а-яё]+)*/g;
+export function markerFeatures(text, markers = [], display = []) {
+  const lower = text.toLowerCase();
+  const words = lower.replace(/ё/g, 'е').match(RU_WORD) || [];
+  const nWords = (lower.match(RU_WORD) || []).length;
+  const all = new Set(markers), show = new Set(display), found = [];
+  let hits = 0;
+  for (let n = 1; n <= 3; n++) {
+    for (let i = 0; i + n <= words.length; i++) {
+      const g = words.slice(i, i + n).join(' ');
+      if (all.has(g)) hits++;
+      if (show.has(g) && !found.includes(g)) found.push(g);
+    }
+  }
+  // для подсказки: сначала длинные обороты; слово, входящее в уже найденный оборот, не повторяем
+  found.sort((a, b) => b.split(' ').length - a.split(' ').length);
+  const shown = found.filter((g, i) => !found.slice(0, i).some((h) => ` ${h} `.includes(` ${g} `))).slice(0, 4);
+  return { marker_rate: 100 * hits / Math.max(nWords, 1), found: shown };
+}

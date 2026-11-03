@@ -53,10 +53,11 @@
     const reasons = r.top.map((t) => `• ${t.label} — ${t.contribution > 0 ? 'похоже на ИИ' : 'похоже на человека'}`).join('\n');
     const head = r.stage === 1 ? 'Предварительная оценка (только стиль текста), уточняется…' : 'Вероятность генерации ИИ';
     el.dataset.aidTip = `${head}: ${pct}%${demo ? ' (ДЕМО-веса!)' : ''}\n` +
-      `Основные признаки:\n${reasons}\n\nОценка вероятностная и не является доказательством.`;
+      `Основные признаки:\n${reasons}\n` + markerLine(r) + `\nОценка вероятностная и не является доказательством.`;
     if (color) el.style.setProperty('background-color', color, 'important');
     if (r.stage === 1) el.style.setProperty('outline', '1px dashed rgba(120, 120, 120, 0.8)', 'important');
   }
+  const markerLine = (r) => (r.markers?.length ? `Обороты, типичные для ИИ: ${r.markers.map((g) => `«${g}»`).join(', ')}\n` : '');
   function clearEl(el) {
     delete el.dataset.aidTip; delete el.dataset.aidStage;
     el.style.removeProperty('background-color'); el.style.removeProperty('outline');
@@ -161,7 +162,7 @@
     if (!r || r.status !== 'ok') { showBadge(r?.status === 'unsupported_language' ? 'Язык страницы не поддерживается' : 'Не удалось оценить статью'); return; }
     const level = r.thr ? (r.p >= r.thr.fpr02 ? 'высокая вероятность ИИ' : r.p >= r.thr.fpr10 ? 'средняя вероятность ИИ' : 'низкая вероятность ИИ') : '';
     showBadge(`Статья целиком: ${Math.round(r.p * 100)}% (${level})\nПроанализировано токенов: ${r.tokens}\n` +
-      r.top.map((t) => `• ${t.label} — ${t.contribution > 0 ? 'похоже на ИИ' : 'похоже на человека'}`).join('\n') +
+      r.top.map((t) => `• ${t.label} — ${t.contribution > 0 ? 'похоже на ИИ' : 'похоже на человека'}`).join('\n') + (r.markers?.length ? '\n' + markerLine(r).trimEnd() : '') +
       '\nОценка вероятностная и не является доказательством.');
   }
   function showBadge(text) {

@@ -1,7 +1,7 @@
 // Web Worker: вычисления выполняются в фоновом потоке и не блокируют интерфейс (раздел 2.2).
 // Режимы анализа: 'fast' — только стилометрия (первая ступень, мгновенно), 'full' — гибридный детектор.
 // Вычислительный бэкенд: 'wasm' (WebAssembly, число потоков threads) или 'webgpu' (видеокарта, с запасным WASM).
-import { normalize, detectLang, stylometricFeatures, wordCount } from '../lib/features.js';
+import { normalize, detectLang, stylometricFeatures, wordCount, markerFeatures } from '../lib/features.js';
 import { classify } from '../lib/classifier.js';
 import { loadLM, lmFeatures, truncateText, LM_FEATURE_NAMES } from '../lib/lm.js';
 
@@ -80,15 +80,19 @@ async function analyzeOne(text, mode, minWords, w, eng) {
   if (mode === 'article' && model.article) {
     // Вся статья: первые 512 токенов объединённого текста; стилометрия — по тексту этих токенов
     const L = model.article.max_tokens || 512;
-    const fa = { ...stylometricFeatures(truncateText(lm, norm, L), lang), ...(await lmFeatures(lm, norm, L)) };
+    const ta = truncateText(lm, norm, L);
+    const mk = markerFeatures(ta, model.markers, model.marker_display);
+    const fa = { ...stylometricFeatures(ta, lang), ...(await lmFeatures(lm, norm, L)), marker_rate: mk.marker_rate };
     const { p, top } = classify(fa, model.article);
-    return { status: 'ok', lang, p, top, thr: model.article.thresholds || null, stage: 3, tokens: fa._tokens, lmMs: performance.now() - t1 };
+    return { status: 'ok', lang, p, top, markers: mk.found, thr: model.article.thresholds || null, stage: 3, tokens: fa._tokens, lmMs: performance.now() - t1 };
   }
   Object.assign(f, await lmFeatures(lm, norm, w.meta?.max_tokens || 256));
+  const mk = markerFeatures(norm, model.markers, model.marker_display);
+  f.marker_rate = mk.marker_rate;
   const lmMs = performance.now() - t1;
   const m = pickByLength(model, f._tokens);
   const { p, top } = classify(f, m);
-  return { status: 'ok', lang, p, top, thr: m.thresholds || null, stage: 2, lmMs, tokens: f._tokens };
+  return { status: 'ok', lang, p, top, markers: mk.found, thr: m.thresholds || null, stage: 2, lmMs, tokens: f._tokens };
 }
 
 // Классификатор под длину фрагмента (шаг 9): by_length — список, упорядоченный по upto_tokens
